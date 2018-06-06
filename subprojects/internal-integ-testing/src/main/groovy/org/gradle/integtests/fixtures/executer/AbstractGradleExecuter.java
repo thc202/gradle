@@ -554,7 +554,7 @@ public abstract class AbstractGradleExecuter implements GradleExecuter {
         List<String> result = new ArrayList<String>();
         if (isSharedDaemons()) {
             if (JVM_VERSION_DETECTOR.getJavaVersion(Jvm.forHome(getJavaHome())).compareTo(JavaVersion.VERSION_1_8) < 0) {
-                result.add("-XX:MaxPermSize=512m");
+                result.add("-XX:MaxPermSize=750m");
             }
             result.add("-Xmx2g");
         } else {
