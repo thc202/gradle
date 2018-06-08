@@ -111,7 +111,6 @@ import org.gradle.internal.resource.cached.ByUrlCachedExternalResourceIndex;
 import org.gradle.internal.resource.cached.ExternalResourceFileStore;
 import org.gradle.internal.resource.connector.ResourceConnectorFactory;
 import org.gradle.internal.resource.local.FileAccessTimeJournal;
-import org.gradle.internal.resource.local.FileAccessTracker;
 import org.gradle.internal.resource.local.FileResourceRepository;
 import org.gradle.internal.resource.local.LocallyAvailableResourceFinder;
 import org.gradle.internal.resource.local.ivy.LocallyAvailableResourceFinderFactory;
@@ -123,8 +122,6 @@ import org.gradle.vcs.internal.VcsResolver;
 import org.gradle.vcs.internal.VcsWorkingDirectoryRoot;
 import org.gradle.vcs.internal.VersionControlSystemFactory;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -192,7 +189,7 @@ class DependencyManagementBuildScopeServices {
 
     ModuleRepositoryCacheProvider createModuleRepositoryCacheProvider(BuildCommencedTimeProvider timeProvider, CacheLockingManager cacheLockingManager, ImmutableModuleIdentifierFactory moduleIdentifierFactory,
                                                                       ArtifactCacheMetadata artifactCacheMetadata, AttributeContainerSerializer attributeContainerSerializer, MavenMutableModuleMetadataFactory mavenMetadataFactory, IvyMutableModuleMetadataFactory ivyMetadataFactory, SimpleMapInterner stringInterner,
-                                                                      final ArtifactIdentifierFileStore artifactIdentifierFileStore) {
+                                                                      ArtifactIdentifierFileStore artifactIdentifierFileStore) {
         ModuleRepositoryCaches caches = new ModuleRepositoryCaches(
             new DefaultModuleVersionsCache(
                 timeProvider,
@@ -214,30 +211,25 @@ class DependencyManagementBuildScopeServices {
             new DefaultModuleArtifactCache(
                 "module-artifact",
                 timeProvider,
-                cacheLockingManager
-            ),
-            artifactIdentifierFileStore
+                cacheLockingManager,
+                artifactIdentifierFileStore.getFileAccessTracker()
+            )
         );
         ModuleRepositoryCaches inMemoryCaches = new ModuleRepositoryCaches(
             new InMemoryModuleVersionsCache(timeProvider),
             new InMemoryModuleMetadataCache(timeProvider),
             new InMemoryModuleArtifactsCache(timeProvider),
-            new InMemoryModuleArtifactCache(timeProvider),
-            new FileAccessTracker() {
-                @Override
-                public void markAccessed(Collection<File> files) {
-                    // do nothing
-                }
-            }
+            new InMemoryModuleArtifactCache(timeProvider)
         );
         return new ModuleRepositoryCacheProvider(caches, inMemoryCaches);
     }
 
-    ByUrlCachedExternalResourceIndex createArtifactUrlCachedResolutionIndex(BuildCommencedTimeProvider timeProvider, CacheLockingManager cacheLockingManager) {
+    ByUrlCachedExternalResourceIndex createArtifactUrlCachedResolutionIndex(BuildCommencedTimeProvider timeProvider, CacheLockingManager cacheLockingManager, ExternalResourceFileStore externalResourceFileStore) {
         return new ByUrlCachedExternalResourceIndex(
             "resource-at-url",
             timeProvider,
-            cacheLockingManager
+            cacheLockingManager,
+            externalResourceFileStore.getFileAccessTracker()
         );
     }
 
