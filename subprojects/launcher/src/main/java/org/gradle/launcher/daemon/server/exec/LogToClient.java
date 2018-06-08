@@ -56,6 +56,7 @@ public class LogToClient extends BuildCommandOnly {
             return;
         }
 
+        loggingOutput.flush();
         dispatcher = new DaemonConnectionLogDispatcher(execution.getConnection(), build.getParameters().getLogLevel());
         LOGGER.info("{}{}). The daemon log file: {}", DaemonMessages.STARTED_RELAYING_LOGS, diagnostics.getPid(), diagnostics.getDaemonLog());
         dispatcher.start();
