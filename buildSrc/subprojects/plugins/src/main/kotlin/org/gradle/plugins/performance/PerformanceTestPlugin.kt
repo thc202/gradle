@@ -317,9 +317,9 @@ class PerformanceTestPlugin : Plugin<Project> {
         performanceSourceSet: SourceSet,
         prepareSamplesTask: TaskProvider<Task>,
         performanceReportTask: TaskProvider<PerformanceReport>
-    ): TaskProvider<DistributedPerformanceTest> =
+    ): TaskProvider<DistributedPerformanceTest> {
 
-        tasks.register(name, DistributedPerformanceTest::class.java) {
+        val result = tasks.register(name, DistributedPerformanceTest::class.java) {
             configureForAnyPerformanceTestTask(this, performanceSourceSet, prepareSamplesTask, performanceReportTask)
             scenarioList = buildDir / Config.performanceTestScenarioListFileName
             scenarioReport = buildDir / Config.performanceTestScenarioReportFileName
@@ -330,12 +330,18 @@ class PerformanceTestPlugin : Plugin<Project> {
             teamCityUrl = Config.teamCityUrl
             teamCityUsername = stringPropertyOrNull(PropertyNames.teamCityUsername)
             teamCityPassword = stringPropertyOrNull(PropertyNames.teamCityPassword)
-            afterEvaluate {
+        }
+
+        afterEvaluate {
+            result.configure {
                 branchName?.takeIf { it.isNotEmpty() }?.let { branchName ->
                     channel = channel + "-" + branchName
                 }
             }
         }
+
+        return result
+    }
 
     private
     fun Project.createLocalPerformanceTestTask(
