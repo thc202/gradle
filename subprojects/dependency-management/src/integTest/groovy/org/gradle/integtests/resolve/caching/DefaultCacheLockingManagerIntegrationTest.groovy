@@ -67,7 +67,7 @@ class DefaultCacheLockingManagerIntegrationTest extends AbstractHttpDependencyRe
         buildscriptWithDependency(snapshotModule)
 
         when:
-        executer.requireOwnGradleUserHomeDir() // needs its own journal
+        requireOwnGradleUserHomeDir() // needs its own journal
         succeeds 'resolve'
 
         then:
@@ -77,6 +77,7 @@ class DefaultCacheLockingManagerIntegrationTest extends AbstractHttpDependencyRe
         journal.assertExists()
 
         when:
+        run '--stop' // ensure daemon does not cache file access times in memory
         assert journal.delete() // delete journal to clear access time information
         markForCleanup(gcFile) // force cleanup
 
@@ -120,7 +121,7 @@ class DefaultCacheLockingManagerIntegrationTest extends AbstractHttpDependencyRe
         buildscriptWithDependency(snapshotModule)
 
         when:
-        executer.requireOwnGradleUserHomeDir() // needs its own journal
+        requireOwnGradleUserHomeDir() // needs its own journal
         succeeds 'resolve'
 
         and:
